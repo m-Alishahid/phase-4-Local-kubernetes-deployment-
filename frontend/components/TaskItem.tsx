@@ -16,9 +16,10 @@ import {
   TrashIcon,
   ClockIcon,
   CalendarIcon,
-  ArrowPathIcon
+  ArrowPathIcon,
+  SparklesIcon
 } from '@heroicons/react/24/outline';
-import { cn} from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 
 interface TaskItemProps {
@@ -62,135 +63,171 @@ export default function TaskItem({ task, onToggle, onDelete, onEdit }: TaskItemP
     <>
       <motion.div
         layout
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        whileHover={{ y: -2 }}
-        transition={{ duration: 0.2 }}
-        className="group"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        whileHover={{ y: -4, scale: 1.01 }}
+        className="group relative"
       >
-        <Card className={cn(
-          "p-4 transition-all duration-200 border-l-4",
+        {/* Glow Effect on Hover */}
+        <div className="absolute -inset-2 bg-gradient-to-r from-indigo-500/0 via-indigo-500/10 to-indigo-500/0 rounded-[2rem] opacity-0 group-hover:opacity-100 blur-xl transition-opacity duration-500" />
+
+        <div className={cn(
+          "relative overflow-hidden p-5 rounded-[1.5rem] transition-all duration-300 border backdrop-blur-md",
           task.completed
-            ? "bg-muted/40 border-l-green-500/50 opacity-75"
-            : "bg-card border-l-primary hover:shadow-lg hover:border-l-primary/80"
+            ? "glass-card opacity-60 border-emerald-500/20"
+            : "bg-white/40 dark:bg-slate-900/40 border-white/20 dark:border-slate-800/20 shadow-xl shadow-slate-200/40 dark:shadow-none hover:bg-white/60 dark:hover:bg-slate-900/60"
         )}>
-          <div className="flex items-start gap-4">
-            {/* Checkbox */}
+          {/* Subtle completion indicator for active tasks */}
+          {!task.completed && (
+            <div className={cn(
+              "absolute left-0 top-0 bottom-0 w-1",
+              task.priority === 'high' ? "bg-rose-500" :
+                task.priority === 'medium' ? "bg-amber-500" : "bg-emerald-500"
+            )} />
+          )}
+
+          <div className="flex items-start gap-5">
+            {/* Custom Checkbox */}
             <button
               onClick={handleToggle}
               disabled={isToggling}
               className={cn(
-                "mt-1 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200",
+                "mt-0.5 w-7 h-7 rounded-xl border-2 flex items-center justify-center transition-all duration-300 shrink-0",
                 task.completed
-                  ? "bg-green-500 border-green-500 text-white"
-                  : "border-muted-foreground/30 hover:border-primary text-transparent"
+                  ? "bg-emerald-500 border-emerald-500 text-white shadow-lg shadow-emerald-500/30 rotate-12"
+                  : "border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 hover:border-indigo-500 hover:scale-110"
               )}
             >
-              <CheckIcon className="w-4 h-4" />
+              {isToggling ? (
+                <ArrowPathIcon className="w-4 h-4 animate-spin" />
+              ) : (
+                <CheckIcon className={cn("w-4 h-4 transition-transform", task.completed ? "scale-100" : "scale-0")} />
+              )}
             </button>
 
-            {/* Content */}
-            <div className="flex-1 min-w-0 space-y-1.5">
-              <div className="flex items-start justify-between gap-2">
-                <h3 className={cn(
-                  "font-semibold text-base leading-none transition-colors",
-                  task.completed ? "text-muted-foreground line-through decoration-muted-foreground/50" : "text-foreground"
-                )}>
-                  {task.title}
-                </h3>
+            {/* Task Content */}
+            <div className="flex-1 min-w-0 space-y-3">
+              <div className="flex items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <h3 className={cn(
+                    "text-lg font-bold tracking-tight transition-all",
+                    task.completed
+                      ? "text-slate-400 line-through decoration-slate-400/50 decoration-2"
+                      : "text-slate-800 dark:text-white"
+                  )}>
+                    {task.title}
+                  </h3>
+                  {task.description && (
+                    <p className={cn(
+                      "text-sm line-clamp-2 font-medium leading-relaxed",
+                      task.completed ? "text-slate-400" : "text-slate-500 dark:text-slate-400"
+                    )}>
+                      {task.description}
+                    </p>
+                  )}
+                </div>
 
-                {/* Actions (visible on hover or focus) */}
-                <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                {/* Glassy Actions */}
+                <div className="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-all -translate-y-2 group-hover:translate-y-0">
                   <Button
                     variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-primary"
+                    size="icon"
+                    className="h-9 w-9 rounded-xl bg-white/50 dark:bg-slate-800/50 hover:bg-white dark:hover:bg-slate-700 shadow-sm border border-white/20"
                     onClick={() => onEdit(task)}
                   >
-                    <PencilSquareIcon className="w-4 h-4" />
+                    <PencilSquareIcon className="w-4.5 h-4.5 text-indigo-500" />
                   </Button>
                   <Button
                     variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                    size="icon"
+                    className="h-9 w-9 rounded-xl bg-white/50 dark:bg-slate-800/50 hover:bg-rose-50 dark:hover:bg-rose-900/30 shadow-sm border border-white/20"
                     onClick={() => setShowDeleteConfirm(true)}
                   >
-                    <TrashIcon className="w-4 h-4" />
+                    <TrashIcon className="w-4.5 h-4.5 text-rose-500" />
                   </Button>
                 </div>
               </div>
 
-              {task.description && (
-                <p className={cn(
-                  "text-sm line-clamp-2",
-                  task.completed ? "text-muted-foreground/80" : "text-muted-foreground"
-                )}>
-                  {task.description}
-                </p>
-              )}
-
-              {/* Meta & Badges */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <div className="flex flex-wrap gap-2">
-                  {task.priority && <PriorityBadge priority={task.priority} />}
-                  {task.category && <CategoryBadge category={task.category} />}
-                  {task.due_date && <DueDateBadge dueDate={task.due_date} completed={task.completed} />}
+              {/* Status Bar */}
+              <div className="flex flex-wrap items-center gap-3 pt-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  {task.priority && (
+                    <div className="scale-90 origin-left">
+                      <PriorityBadge priority={task.priority} />
+                    </div>
+                  )}
+                  {task.category && (
+                    <div className="scale-90 origin-left">
+                      <CategoryBadge category={task.category} />
+                    </div>
+                  )}
+                  {task.due_date && (
+                    <div className="scale-90 origin-left">
+                      <DueDateBadge dueDate={task.due_date} completed={task.completed} />
+                    </div>
+                  )}
                 </div>
 
-                <div className="flex-1" />
+                <div className="h-4 w-px bg-slate-200 dark:bg-slate-800 mx-1 flex-shrink-0" />
 
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <ClockIcon className="w-3 h-3" />
-                    {formatDistanceToNow(new Date(task.created_at), { addSuffix: true })}
-                  </span>
+                <div className="flex items-center gap-1.5 text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  <ClockIcon className="w-3.5 h-3.5" />
+                  <span>{formatDistanceToNow(new Date(task.created_at), { addSuffix: true })}</span>
                 </div>
+
+                {task.completed && (
+                  <div className="ml-auto flex items-center gap-1 bg-emerald-500/10 text-emerald-600 px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-widest">
+                    <SparklesIcon className="w-3 h-3" />
+                    Completed
+                  </div>
+                )}
               </div>
             </div>
           </div>
-        </Card>
+        </div>
       </motion.div>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Modern Deletion UI */}
       <AnimatePresence>
         {showDeleteConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 bg-slate-900/60 backdrop-blur-xl">
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
               className="w-full max-w-sm"
             >
-              <Card className="p-6 space-y-4 shadow-2xl border-destructive/20">
-                <div className="flex flex-col items-center text-center gap-2">
-                  <div className="p-3 rounded-full bg-destructive/10 text-destructive">
-                    <TrashIcon className="w-8 h-8" />
+              <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 space-y-8 shadow-2xl border border-white/20 dark:border-slate-800 relative overflow-hidden group">
+                <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-rose-500 to-orange-500" />
+                <div className="flex flex-col items-center text-center gap-6">
+                  <div className="w-20 h-20 rounded-[2rem] bg-rose-50 dark:bg-rose-900/20 flex items-center justify-center text-rose-500 rotate-12 group-hover:rotate-0 transition-transform duration-500">
+                    <TrashIcon className="w-10 h-10" />
                   </div>
-                  <h3 className="text-lg font-semibold">Delete Task</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Are you sure you want to delete <span className="font-medium text-foreground">&quot;{task.title}&quot;</span>? This action cannot be undone.
-                  </p>
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-black tracking-tight text-slate-800 dark:text-white">Delete this task?</h3>
+                    <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
+                      You are about to permanently remove <span className="text-slate-800 dark:text-white font-bold italic">"{task.title}"</span>. This action is irreversible.
+                    </p>
+                  </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    className="flex-1"
+                <div className="flex items-center gap-4">
+                  <button
+                    className="flex-1 px-6 py-4 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 font-bold hover:bg-slate-200 transition-all active:scale-95"
                     onClick={() => setShowDeleteConfirm(false)}
                     disabled={isDeleting}
                   >
-                    Cancel
-                  </Button>
-                  <Button
-                    variant="destructive"
-                    className="flex-1"
+                    Keep it
+                  </button>
+                  <button
+                    className="flex-1 px-6 py-4 rounded-2xl bg-rose-600 text-white font-bold shadow-xl shadow-rose-500/30 hover:bg-rose-700 transition-all active:scale-95 flex items-center justify-center"
                     onClick={handleDelete}
                     disabled={isDeleting}
                   >
-                    {isDeleting ? <ArrowPathIcon className="w-4 h-4 animate-spin" /> : "Delete"}
-                  </Button>
+                    {isDeleting ? <ArrowPathIcon className="w-5 h-5 animate-spin" /> : "Delete"}
+                  </button>
                 </div>
-              </Card>
+              </div>
             </motion.div>
           </div>
         )}

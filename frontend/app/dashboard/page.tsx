@@ -37,13 +37,13 @@ export default function DashboardPage() {
       try {
         const token = localStorage.getItem('auth_token');
         if (!token) {
-          router.push('/');
+          router.push('/auth');
           return;
         }
         const userDataString = localStorage.getItem('user');
         if (!userDataString) {
           localStorage.removeItem('auth_token');
-          router.push('/');
+          router.push('/auth');
           return;
         }
         setUser(JSON.parse(userDataString));
@@ -51,7 +51,7 @@ export default function DashboardPage() {
         console.error('Error checking authentication:', error);
         localStorage.removeItem('auth_token');
         localStorage.removeItem('user');
-        router.push('/');
+        router.push('/auth');
       } finally {
         setIsAuthLoading(false);
       }
@@ -273,43 +273,63 @@ export default function DashboardPage() {
 
       {/* Create Modal */}
       {showCreateModal && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-card border border-border rounded-xl shadow-2xl p-6 animate-in fade-in zoom-in duration-200">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Create New Task</h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowCreateModal(false)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-              </Button>
+        <div className="fixed inset-0 bg-background/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-lg bg-card border border-border/50 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+            <div className="p-6 md:p-8">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h2 className="text-2xl font-black tracking-tight">Create Task</h2>
+                  <p className="text-xs text-muted-foreground mt-1 uppercase tracking-widest font-bold">New Assignment</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setShowCreateModal(false)}
+                  className="rounded-full hover:bg-muted"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                </Button>
+              </div>
+              <TaskForm
+                onSubmit={handleCreateTask}
+                submitLabel="Create Task"
+                onCancel={() => setShowCreateModal(false)}
+              />
             </div>
-            <TaskForm
-              onSubmit={handleCreateTask}
-              submitLabel="Create Task"
-              onCancel={() => setShowCreateModal(false)}
-            />
           </div>
         </div>
       )}
 
       {/* Edit Modal */}
       {editingTask && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="w-full max-w-lg bg-card border border-border rounded-xl shadow-2xl p-6 animate-in fade-in zoom-in duration-200">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Edit Task</h2>
-              <Button variant="ghost" size="icon" onClick={() => setEditingTask(null)}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-              </Button>
+        <div className="fixed inset-0 bg-background/40 backdrop-blur-md z-50 flex items-center justify-center p-4 animate-in fade-in duration-300">
+          <div className="w-full max-w-lg bg-card border border-border/50 rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 slide-in-from-bottom-4 duration-300">
+            <div className="p-6 md:p-8">
+              <div className="flex justify-between items-center mb-8">
+                <div>
+                  <h2 className="text-2xl font-black tracking-tight">Edit Task</h2>
+                  <p className="text-xs text-muted-foreground mt-1 uppercase tracking-widest font-bold">Modify Status</p>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setEditingTask(null)}
+                  className="rounded-full hover:bg-muted"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-5 w-5"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                </Button>
+              </div>
+              <TaskForm
+                onSubmit={handleUpdateTask}
+                initialTitle={editingTask.title}
+                initialDescription={editingTask.description || ''}
+                initialCategory={editingTask.category}
+                initialPriority={editingTask.priority}
+                initialDueDate={editingTask.due_date}
+                submitLabel="Update Task"
+                onCancel={() => setEditingTask(null)}
+              />
             </div>
-            <TaskForm
-              onSubmit={handleUpdateTask}
-              initialTitle={editingTask.title}
-              initialDescription={editingTask.description || ''}
-              initialCategory={editingTask.category}
-              initialPriority={editingTask.priority}
-              initialDueDate={editingTask.due_date}
-              submitLabel="Update Task"
-              onCancel={() => setEditingTask(null)}
-            />
           </div>
         </div>
       )}

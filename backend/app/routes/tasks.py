@@ -12,7 +12,6 @@ Endpoints:
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
-from sqlalchemy import select
 from datetime import datetime
 
 from app.dependencies import get_db, get_current_user
@@ -23,6 +22,7 @@ from app.schemas import (
     TaskResponse,
     TaskListResponse,
 )
+from app.services.task_service import TaskService
 
 router = APIRouter()
 
@@ -33,31 +33,8 @@ def list_tasks(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_db),
 ):
-    """
-    List all tasks for the current user.
-
-    Args:
-        completed: Optional filter by completion status
-        current_user: Current authenticated user
-        session: Database session
-
-    Returns:
-        TaskListResponse with list of tasks and total count
-    """
-    # Build query
-    query = select(Task).where(Task.user_id == current_user.id)
-
-    # Apply completion filter if provided
-    if completed is not None:
-        query = query.where(Task.completed == completed)
-
-    # Order by creation date (newest first)
-    query = query.order_by(Task.created_at.desc())
-
-    # Execute query
-    result = session.execute(query)
-    tasks = result.scalars().all()
-
+    """List all tasks for the current user."""
+    tasks = TaskService.list_tasks(session, current_user.id, completed)
     return TaskListResponse(
         tasks=[TaskResponse.model_validate(task) for task in tasks],
         total=len(tasks),
@@ -70,30 +47,9 @@ def create_task(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_db),
 ):
-    """
-    Create a new task for the current user.
-
-    Args:
-        task_data: Task creation data (title, description)
-        current_user: Current authenticated user
-        session: Database session
-
-    Returns:
-        TaskResponse with created task information
-    """
-    # Create new task
-    new_task = Task(
-        user_id=current_user.id,
-        title=task_data.title,
-        description=task_data.description,
-        completed=False,
-    )
-
-    session.add(new_task)
-    session.commit()
-    session.refresh(new_task)
-
-    return TaskResponse.model_validate(new_task)
+    """Create a new task for the current user."""
+    task = TaskService.create_task(session, current_user.id, task_data)
+    return TaskResponse.model_validate(task)
 
 
 @router.get("/{task_id}", response_model=TaskResponse)
@@ -102,32 +58,8 @@ def get_task(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_db),
 ):
-    """
-    Get a specific task by ID.
-
-    Args:
-        task_id: Task ID
-        current_user: Current authenticated user
-        session: Database session
-
-    Returns:
-        TaskResponse with task information
-
-    Raises:
-        HTTPException 404: If task not found or doesn't belong to user
-    """
-    # Fetch task
-    result = session.execute(
-        select(Task).where(Task.id == task_id, Task.user_id == current_user.id)
-    )
-    task = result.scalar_one_or_none()
-
-    if not task:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found",
-        )
-
+    """Get a specific task by ID."""
+    task = TaskService.get_task(session, current_user.id, task_id)
     return TaskResponse.model_validate(task)
 
 
@@ -138,49 +70,8 @@ def update_task(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_db),
 ):
-    """
-    Update an existing task.
-
-    Args:
-        task_id: Task ID
-        task_data: Task update data (title, description, completed)
-        current_user: Current authenticated user
-        session: Database session
-
-    Returns:
-        TaskResponse with updated task information
-
-    Raises:
-        HTTPException 404: If task not found or doesn't belong to user
-    """
-    # Fetch task
-    result = session.execute(
-        select(Task).where(Task.id == task_id, Task.user_id == current_user.id)
-    )
-    task = result.scalar_one_or_none()
-
-    if not task:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found",
-        )
-
-    # Update fields if provided
-    if task_data.title is not None:
-        task.title = task_data.title
-
-    if task_data.description is not None:
-        task.description = task_data.description
-
-    if task_data.completed is not None:
-        task.completed = task_data.completed
-
-    # Update timestamp
-    task.updated_at = datetime.utcnow()
-
-    session.commit()
-    session.refresh(task)
-
+    """Update an existing task."""
+    task = TaskService.update_task(session, current_user.id, task_id, task_data)
     return TaskResponse.model_validate(task)
 
 
@@ -190,36 +81,8 @@ def delete_task(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_db),
 ):
-    """
-    Delete a task.
-
-    Args:
-        task_id: Task ID
-        current_user: Current authenticated user
-        session: Database session
-
-    Returns:
-        No content (204)
-
-    Raises:
-        HTTPException 404: If task not found or doesn't belong to user
-    """
-    # Fetch task
-    result = session.execute(
-        select(Task).where(Task.id == task_id, Task.user_id == current_user.id)
-    )
-    task = result.scalar_one_or_none()
-
-    if not task:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found",
-        )
-
-    # Delete task
-    session.delete(task)
-    session.commit()
-
+    """Delete a task."""
+    TaskService.delete_task(session, current_user.id, task_id)
     return None
 
 
@@ -229,39 +92,6 @@ def toggle_task_completion(
     current_user: User = Depends(get_current_user),
     session: Session = Depends(get_db),
 ):
-    """
-    Toggle the completion status of a task.
-
-    Args:
-        task_id: Task ID
-        current_user: Current authenticated user
-        session: Database session
-
-    Returns:
-        TaskResponse with updated task information
-
-    Raises:
-        HTTPException 404: If task not found or doesn't belong to user
-    """
-    # Fetch task
-    result = session.execute(
-        select(Task).where(Task.id == task_id, Task.user_id == current_user.id)
-    )
-    task = result.scalar_one_or_none()
-
-    if not task:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Task not found",
-        )
-
-    # Toggle completion status
-    task.completed = not task.completed
-
-    # Update timestamp
-    task.updated_at = datetime.utcnow()
-
-    session.commit()
-    session.refresh(task)
-
+    """Toggle the completion status of a task."""
+    task = TaskService.toggle_task(session, current_user.id, task_id)
     return TaskResponse.model_validate(task)

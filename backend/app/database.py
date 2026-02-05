@@ -79,7 +79,7 @@ def create_db_and_tables():
     """
     # Import models to ensure they are registered with SQLModel
     from sqlmodel import SQLModel
-    from app.models import User, Task  # noqa: F401
+    from app.models import User, Task, Conversation, Message  # noqa: F401
 
     SQLModel.metadata.create_all(bind=engine)
 

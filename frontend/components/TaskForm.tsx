@@ -106,9 +106,12 @@ export default function TaskForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="title">Title <span className="text-destructive">*</span></Label>
+          <Label htmlFor="title" className="text-sm font-bold text-foreground/80 flex justify-between">
+            <span>Title <span className="text-destructive">*</span></span>
+            <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Required</span>
+          </Label>
           <Input
             id="title"
             name="title"
@@ -116,7 +119,10 @@ export default function TaskForm({
             onChange={handleChange}
             placeholder="What needs to be done?"
             disabled={loading}
-            className={cn(validationErrors.title && "border-destructive focus-visible:ring-destructive")}
+            className={cn(
+              "h-11 rounded-lg border-border/40 bg-muted/20 focus:bg-background transition-all",
+              validationErrors.title && "border-destructive focus-visible:ring-destructive"
+            )}
           />
           {validationErrors.title && (
             <p className="text-xs text-destructive font-medium">{validationErrors.title}</p>
@@ -124,51 +130,68 @@ export default function TaskForm({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="description">Description</Label>
+          <Label htmlFor="description" className="text-sm font-bold text-foreground/80">Description</Label>
           <Textarea
             id="description"
             name="description"
             value={formData.description}
             onChange={handleChange}
-            placeholder="Add details..."
-            rows={3}
+            placeholder="Add some context or sub-tasks..."
+            rows={4}
             disabled={loading}
-            className={cn("resize-none", validationErrors.description && "border-destructive focus-visible:ring-destructive")}
+            className={cn(
+              "rounded-lg border-border/40 bg-muted/20 focus:bg-background transition-all resize-none",
+              validationErrors.description && "border-destructive focus-visible:ring-destructive"
+            )}
           />
           {validationErrors.description && (
             <p className="text-xs text-destructive font-medium">{validationErrors.description}</p>
           )}
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* We keep existing components but wrap them to align with Label style if possible, 
-               or just let them be self-contained as they handle their own labels in the current code */}
-          <div className="space-y-2">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-3">
+            <Label className="text-sm font-bold text-foreground/80">Priority</Label>
             <PrioritySelector value={priority} onChange={setPriority} />
           </div>
-          <div className="space-y-2">
+          <div className="space-y-3">
+            <Label className="text-sm font-bold text-foreground/80 flex justify-between">
+              <span>Category</span>
+              <span className="text-[10px] text-muted-foreground uppercase">Optional</span>
+            </Label>
             <CategorySelector value={category} onChange={setCategory} />
           </div>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-3 pt-2">
+          <Label className="text-sm font-bold text-foreground/80">Due Date</Label>
           <DatePicker value={dueDate} onChange={setDueDate} />
         </div>
       </div>
 
       {error && (
-        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-md text-sm text-destructive font-medium">
+        <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-lg text-sm text-destructive font-medium animate-in fade-in slide-in-from-top-1">
           {error}
         </div>
       )}
 
-      <div className="flex justify-end gap-3 pt-4 border-t border-border/50">
+      <div className="flex justify-end gap-3 pt-6 border-t border-border/40">
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel} disabled={loading}>
+          <Button
+            type="button"
+            variant="ghost"
+            onClick={onCancel}
+            disabled={loading}
+            className="rounded-lg px-6"
+          >
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={loading} className="min-w-[120px]">
+        <Button
+          type="submit"
+          disabled={loading}
+          className="min-w-[140px] rounded-lg shadow-lg shadow-primary/20 transition-all active:scale-95"
+        >
           {loading ? (
             <>
               <ArrowPathIcon className="mr-2 h-4 w-4 animate-spin" />

@@ -50,7 +50,7 @@ async def initialize_database() -> None:
         print()
 
         # Create all tables
-        await create_db_and_tables()
+        create_db_and_tables()
 
         print("=" * 60)
         print("[SUCCESS] Database tables created successfully!")

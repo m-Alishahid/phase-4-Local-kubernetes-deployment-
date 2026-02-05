@@ -98,7 +98,8 @@ async def health_check() -> dict[str, str]:
 
 
 # Import and register API routers
-from app.routes import auth, tasks  # noqa: E402
+from app.routes import auth, tasks, chat  # noqa: E402
 
-app.include_router(auth.router)
+app.include_router(auth.router, prefix="/api/auth", tags=["Auth"])
 app.include_router(tasks.router, prefix="/api/tasks", tags=["Tasks"])
+app.include_router(chat.router, prefix="/api/chat", tags=["AI Chat"])

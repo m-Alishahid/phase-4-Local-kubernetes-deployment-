@@ -1,22 +1,23 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Outfit, Inter } from "next/font/google";
 import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
 import Toaster from "@/components/Toaster";
+import ChatDrawer from "@/components/Chat/ChatDrawer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const outfit = Outfit({
+  variable: "--font-outfit",
   subsets: ["latin"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Todo App - Organize Your Tasks",
-  description: "Modern todo application with authentication and real-time updates",
+  title: "TaskMaster AI - Intelligent Task Management",
+  description: "Organize, prioritize, and accomplish more with AI-powered task management. Built by Ali Shahid.",
 };
 
 export default function RootLayout({
@@ -26,9 +27,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${geistSans.variable} ${geistMono.variable}`}>
+      <body className={`${outfit.variable} ${inter.variable} antialiased font-sans`}>
         <ThemeProvider>
           {children}
+          <ChatDrawer />
           <Toaster />
         </ThemeProvider>
       </body>

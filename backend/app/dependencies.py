@@ -41,27 +41,7 @@ security = HTTPBearer()
 # Database Dependencies
 # ========================================
 
-async def get_db() -> Generator[Session, None, None]:
-    """
-    Dependency function to provide database sessions to route handlers.
-
-    This is a wrapper around get_session from app.database that provides
-    a consistent interface for dependency injection.
-
-    Usage:
-        @router.get("/items")
-        def get_items(db: Session = Depends(get_db)):
-            result = db.execute(select(Item))
-            return result.scalars().all()
-
-    Yields:
-        Session: Database session with automatic commit/rollback handling
-
-    Notes:
-        - Session is automatically committed on success
-        - Session is automatically rolled back on exception
-        - Session is always closed after the request
-    """
+def get_db() -> Generator[Session, None, None]:
     for session in get_session():
         yield session
 

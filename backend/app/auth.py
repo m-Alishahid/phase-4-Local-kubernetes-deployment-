@@ -15,7 +15,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import Session
 from sqlalchemy import select
 from dotenv import load_dotenv
 
@@ -125,56 +125,3 @@ def decode_access_token(token: str) -> dict:
         )
 
 
-# ========================================
-# Authentication Dependencies
-# ========================================
-
-async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
-    session: AsyncSession = Depends(get_session),
-) -> User:
-    """
-    Dependency to get the current authenticated user from JWT token.
-    
-    Usage in routes:
-        @router.get("/protected")
-        async def protected_route(user: User = Depends(get_current_user)):
-            return {"user_id": user.id}
-    
-    Args:
-        credentials: HTTP Authorization header with Bearer token
-        session: Database session
-        
-    Returns:
-        Current authenticated User object
-        
-    Raises:
-        HTTPException 401: If token is invalid or user not found
-    """
-    # Extract token
-    token = credentials.credentials
-    
-    # Decode token
-    payload = decode_access_token(token)
-    
-    # Get user_id from payload
-    user_id: str = payload.get("sub")
-    if user_id is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid token payload",
-        )
-    
-    # Fetch user from database
-    result = await session.execute(
-        select(User).where(User.id == user_id)
-    )
-    user = result.scalar_one_or_none()
-    
-    if user is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="User not found",
-        )
-    
-    return user
