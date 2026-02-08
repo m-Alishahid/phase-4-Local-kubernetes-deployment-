@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: todo-backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: todo-backend
+  template:
+    metadata:
+      labels:
+        app: todo-backend
+    spec:
+      containers:
+      - name: backend
+        image: todo-backend:latest
+        imagePullPolicy: Never
+        ports:
+        - containerPort: 8001
+        env:
+        - name: DATABASE_URL
+          value: "postgresql://neondb_owner:npg_JIVLmKzCs30W@ep-bold-surf-ah3dx6q5-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require"
+        - name: BETTER_AUTH_SECRET
+          value: "iQqaa/xGZmT9Gb0Jh4KEvMJVXghH82rxBk6tqPOsqgQ="
+        - name: CORS_ORIGINS
+          value: "http://localhost:3000,http://todo-frontend:3000"
+        - name: DEBUG
+          value: "false"
+        - name: JWT_ALGORITHM
+          value: "HS256"
+        - name: JWT_EXPIRY_DAYS
+          value: "7"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: todo-backend-service
+spec:
+  selector:
+    app: todo-backend
+  ports:
+    - protocol: TCP
+      port: 8001
+      targetPort: 8001
+  type: ClusterIP

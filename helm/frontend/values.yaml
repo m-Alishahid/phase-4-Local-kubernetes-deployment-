@@ -1,0 +1,14 @@
+# Default values for todo-frontend.
+replicaCount: 1
+
+image:
+  repository: todo-frontend
+  tag: "latest"
+  pullPolicy: Never
+
+service:
+  type: ClusterIP
+  port: 3000
+
+env:
+  NEXT_PUBLIC_API_URL: "http://todo-backend:8001"
