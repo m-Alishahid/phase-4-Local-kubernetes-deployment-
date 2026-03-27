@@ -329,7 +329,7 @@ This project is for educational purposes.
 
 ## 👨‍💻 Author
 
-Built with ❤️ for the Hackathon
+Built with ❤️ Ali Shahid
 
 ---
 
